@@ -8,6 +8,8 @@ body,
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--calcite-color-border-2) transparent;
 }
 
 .udp-shell {
@@ -169,6 +171,11 @@ arcgis-sketch {
   width: 100%;
 }
 
+.tools_bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
 arcgis-sketch {
   min-height: 180px;
 }
