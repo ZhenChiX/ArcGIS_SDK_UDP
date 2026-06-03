@@ -24,7 +24,7 @@ export default function CircleInspectorTool({
   isActive,
 }: CircleInspectorToolProps) {
   // UI State (Only update this when necessary)
-  const [layerName, setLayerName] = useState("Target layer");
+  // const [layerName, setLayerName] = useState("Target layer");
   const [totalCount, setTotalCount] = useState(0);
   const [fieldCounts, setFieldCounts] = useState<FieldCount[]>([]);
   const [statusText, setStatusText] = useState("Standby");
@@ -100,7 +100,7 @@ export default function CircleInspectorTool({
         setStatusText("Layer Error");
         return;
       }
-      setLayerName(targetLayer.title);
+      // setLayerName(targetLayer.title);
 
       // 3. WAIT FOR CLIENT-SIDE VIEW (Critical for speed)
       let layerView: any = null;
