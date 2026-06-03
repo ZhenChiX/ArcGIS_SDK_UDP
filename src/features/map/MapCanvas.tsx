@@ -17,6 +17,11 @@ import "@esri/calcite-components/components/calcite-action";
 import "@esri/calcite-components/components/calcite-tooltip";
 
 import "../../MapCanvas.css";
+// import RadiusSelectTool from "../sketch/RadiusSelectTool";
+
+// import CircleInspectorTool from "../sketch/RadiusSelectTool";
+import CircleInspectorTool from "../sketch/CircleInspectorTool";
+
 
 const WEBMAP_ID = "ac2e660700144e0883b725c75d8b8b5f";
 const MAP_ID = "udp-map";
@@ -25,8 +30,10 @@ export default function MapCanvas() {
   const mapRef = useRef<any>(null);
   const featureTableRef = useRef<any>(null);
 
+  // State management
   const [panelCollapsed, setPanelCollapsed] = useState(true);
   const [tableVisible, setTableVisible] = useState(false);
+  const [circleInspectorActive, setCircleInspectorActive] = useState(false);
 
   function handleLayersAction() {
     setPanelCollapsed((currentCollapsed) => !currentCollapsed);
@@ -147,6 +154,7 @@ export default function MapCanvas() {
 
       <calcite-shell-panel slot="panel-end" width-scale="auto" collapsed={panelCollapsed ? true : undefined}>
         <calcite-action-bar slot="action-bar">
+          {/* Layer List Toggle Button */}
           <calcite-action
             id="layer-button"
             icon="layers"
@@ -158,7 +166,7 @@ export default function MapCanvas() {
           <calcite-tooltip reference-element="layer-button" placement="auto">
             <span>Layers</span>
           </calcite-tooltip>
-
+          {/* Table Toggle Button */}
           <calcite-action
             id="table-button"
             icon="table"
@@ -170,20 +178,39 @@ export default function MapCanvas() {
           <calcite-tooltip reference-element="table-button" placement="auto">
             <span>Show Tables</span>
           </calcite-tooltip>
+
+          {/* Circle Inspector Toggle Button */}
+          <calcite-action
+            id="circle-inspector-button"
+            icon="chart-magnifying-glass"
+            label="Circle Inspector"
+            text="Inspector"
+            active={circleInspectorActive ? true : undefined}
+            onClick={() => setCircleInspectorActive((value) => !value)}
+          />
+
+          <calcite-tooltip reference-element="circle-inspector-button" placement="auto">
+            <span>Inspector Circle</span>
+          </calcite-tooltip>
+
+          {/* Future buttons goes here */}
         </calcite-action-bar>
 
         <calcite-panel heading="Layers">
-          <arcgis-layer-list reference-element={MAP_ID} tooltip="Layers" />
+          <arcgis-layer-list reference-element={MAP_ID}
+            tooltip="Layers"
+            selection-mode="single" />
         </calcite-panel>
       </calcite-shell-panel>
 
+      {/* Arcgis main map loader */}
       <arcgis-map
         id={MAP_ID}
         itemId={WEBMAP_ID}
         ref={mapRef}
         className="map"
         center={[-122.31232, 47.66126]}
-        zoom={15}
+        zoom={14}
         popupComponentEnabled
         dockingEnabled
       >
@@ -191,10 +218,23 @@ export default function MapCanvas() {
           <arcgis-legend label="Legend" icon="legend"></arcgis-legend>
         </arcgis-expand>
 
-        <div slot="top-left" className="tools_bottom">
+        <div slot="top-start" className="tools_bottom">
           <arcgis-zoom />
           <arcgis-home />
+          {/* <CircleInspectorTool mapRef={mapRef}/> */}
+
+          {/* // Target test index based on flattened layer. */}
+        
         </div>
+          <CircleInspectorTool
+            mapRef={mapRef}
+            isActive={circleInspectorActive}
+          />
+        {/* <CircleInspectorTool mapRef={mapRef} targetTestIndex={4} /> */}
+
+
+
+        {/* <arcgis-search slot="top-right" /> */}
 
         {/* 
           SLOT POSITIONING FIX:
@@ -202,7 +242,8 @@ export default function MapCanvas() {
           ensures that it stays nested within the map layout engine boundaries.
         */}
         {tableVisible && (
-          <div slot="bottom-start" className="inner-map-table-panel">
+
+          <div slot="bottom-start" className="inner-map-table-panel" >
             <arcgis-feature-table
               ref={featureTableRef}
               id="udp-feature-table"
@@ -212,6 +253,7 @@ export default function MapCanvas() {
               show-selection-column="true"
             ></arcgis-feature-table>
           </div>
+
         )}
       </arcgis-map>
     </calcite-shell>

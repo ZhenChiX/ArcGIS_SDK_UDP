@@ -20,8 +20,6 @@
 
 // const WEBMAP_ID = "ac2e660700144e0883b725c75d8b8b5f";
 // const MAP_ID = "udp-map";
-// const TABLE_ID_1 = "7d2e3dc90719449fa4f72fb5b2c36a6d";
-// const TABLE_ID_2 = "7d2e3dc90719449fa4f72fb5b2c36a6d&sublayer=1";
 
 // export default function MapCanvas() {
 //   const mapRef = useRef<any>(null);
@@ -38,7 +36,9 @@
 //     setTableVisible((currentVisible) => !currentVisible);
 //   }
 
-
+//   // =================================================================
+//   // ONLY HOOK NEEDED: Controls Popups, Padding, and Force-Loads a Layer
+//   // =================================================================
 //   useEffect(() => {
 //     let cancelled = false;
 
@@ -48,7 +48,7 @@
 
 //       if (!mapElement?.viewOnReady) return;
 //       await mapElement.viewOnReady();
-//       if (cancelled) return; // Prevent memory leaks if the component unmounted
+//       if (cancelled) return;
 
 //       // Connect table reference anchor
 //       if (tableElement) {
@@ -75,33 +75,61 @@
 //         mapElement.padding = { bottom: 0, top: 0, left: 0, right: 0 };
 //       }
 
-//       // =================================================================
-//       // PLACE CODE HERE: CONFIGURE DROPDOWN OPTION LAYOUT SELECTIONS
-//       // =================================================================
+//       // --- METHOD 2: FILTERING SIDEBAR LIST BY INDEX ---
 //       const mapInstance = mapElement.map;
 //       if (mapInstance && mapInstance.layers) {
-
-//         // METHOD 1: FILTERING BY STRING (TITLE) - Recommended & Safe
-//         // mapInstance.layers.forEach((layer: any) => {
-//         //   const allowedLayerTitles = ["Property & Parcel boundaries", "U District Boundary"];
-
-//         //   if (!allowedLayerTitles.includes(layer.title)) {
-//         //     layer.listMode = "hide"; // Drops unneeded layers from the selection dropdown cleanly
-//         //   }
-//         // });
-
-
-//         // METHOD 2: FILTERING BY INDEX - Optional alternative
-//         // (Uncomment this and comment out Method 1 if you want to target layout indices)
 //         mapInstance.layers.forEach((layer: any, index: number) => {
-//           const allowedIndexes = [2]; // Keep only the first and third layer elements active
+//           const allowedIndexes = [2]; // Keep your preferred sidebar indices active
 
 //           if (!allowedIndexes.includes(index)) {
 //             layer.listMode = "hide";
 //           }
 //         });
 
+//         // =================================================================
+//         // FINAL FIXED CODE BLOCK: LOAD DYNAMIC SUB-LAYERS BY INDEX
+//         // =================================================================
+//         if (tableElement) {
+//           // Flatten the map's layout arrays to automatically extract all hidden nested child layers
+//           const allFlattenedLayers: any[] = [];
 
+//           mapInstance.layers.forEach((layer: any) => {
+//             // Drill into nested sub-structures if present (.layers or .sublayers collections)
+//             const nestedChildren = layer.layers || layer.sublayers;
+//             if (nestedChildren && nestedChildren.length > 0) {
+//               nestedChildren.forEach((sublayer: any) => {
+//                 allFlattenedLayers.push(sublayer);
+//               });
+//             } else {
+//               allFlattenedLayers.push(layer);
+//             }
+//           });
+
+//           // Console log map index layout registry to make debugging easy
+//           console.log("--- Flat Sublayer Registry Map ---");
+//           allFlattenedLayers.forEach((layer, idx) => {
+//             console.log(`[Index ${idx}] -> Name: "${layer.title}" | Type: ${layer.type || "sublayer"}`);
+//           });
+
+//           // -----------------------------------------------------------
+//           // TESTING AREA: Change this index number to test out different sheets!
+//           // -----------------------------------------------------------
+//           const targetTestIndex = 2;
+
+//           const selectedTargetSheet = allFlattenedLayers[targetTestIndex];
+
+//           if (selectedTargetSheet) {
+//             tableElement.layer = selectedTargetSheet;
+//             console.log(`[Success] Table loaded index [${targetTestIndex}]: "${selectedTargetSheet.title}"`);
+//           } else {
+//             // Absolute fail-safe fallback to load whatever works if the testing index is out of bounds
+//             const functionalFallback = allFlattenedLayers.find(l => l.type === "feature" || l.layerId !== undefined);
+//             if (functionalFallback) {
+//               tableElement.layer = functionalFallback;
+//               console.log(`[Fallback Alert] Loading working layer: "${functionalFallback.title}"`);
+//             }
+//           }
+//         }
 //       }
 //     }
 
@@ -110,9 +138,7 @@
 //     return () => {
 //       cancelled = true;
 //     };
-//   }, [tableVisible]); // Tracks toggle state to correctly rebuild DOM node relationships when rendered
-
-  
+//   }, [tableVisible]);
 //   return (
 //     <calcite-shell className="udp-shell">
 //       <calcite-shell-header slot="header">
@@ -147,7 +173,9 @@
 //         </calcite-action-bar>
 
 //         <calcite-panel heading="Layers">
-//           <arcgis-layer-list reference-element={MAP_ID} tooltip="Layers" />
+//           <arcgis-layer-list reference-element={MAP_ID}
+//            tooltip="Layers"
+//            selection-mode ="single" />
 //         </calcite-panel>
 //       </calcite-shell-panel>
 
@@ -173,7 +201,7 @@
 //         {/* 
 //           SLOT POSITIONING FIX:
 //           Placing the container directly inside the arcgis-map using slot="bottom-start" 
-//           or slot="bottom-end" ensures that it stays nested within the map layout engine boundaries.
+//           ensures that it stays nested within the map layout engine boundaries.
 //         */}
 //         {tableVisible && (
 //           <div slot="bottom-start" className="inner-map-table-panel">
