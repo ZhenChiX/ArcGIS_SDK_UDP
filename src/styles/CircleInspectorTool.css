@@ -1,0 +1,80 @@
+.circle-inspector-panel {
+  width: 220px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  padding: 12px;
+  font-family: "Avenir Next", sans-serif;
+  margin: 15px;
+  pointer-events: none; /* Allows clicks to pass through to map if needed */
+}
+
+.circle-panel-header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.circle-panel-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #151515;
+}
+
+.circle-panel-subtitle {
+  font-size: 11px;
+  color: #6a6a6a;
+}
+
+.circle-metric-hero {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.metric-val {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0079c1;
+  margin-right: 6px;
+}
+
+.metric-lbl {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.circle-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.circle-list-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.row-key {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  color: #333;
+}
+
+.row-val {
+  font-weight: 600;
+  color: #000;
+}
+
+.row-empty {
+  font-size: 11px;
+  color: #ccc;
+  font-style: italic;
+}
