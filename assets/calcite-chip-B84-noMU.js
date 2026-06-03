@@ -1,0 +1,1 @@
+import{t as e}from"./calcite-chip-DNhVkNre.js";export{e as Chip};

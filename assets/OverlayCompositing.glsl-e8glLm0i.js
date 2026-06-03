@@ -1,0 +1,1 @@
+import"./glsl-D85RBwKC.js";import"./ShaderBuilder-B0mKT_kG.js";import"./VertexColor.glsl-CuFqOiMs.js";import"./NoParameters-ZDc3QXO4.js";import{a as e,o as t}from"./ColorMaterial-DaM9rTsD.js";export{t as OverlayCompositingPassParameters,e as build};

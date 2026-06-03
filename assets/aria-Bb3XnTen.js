@@ -1,0 +1,1 @@
+function e(e,t,n){let r=e===`block`?t:n;return r==null?void 0:`${r}`}function t(e){return(!!e).toString()}export{t as n,e as t};
