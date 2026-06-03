@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/arcgis-map-components.d.ts","./src/custom-elements.d.ts","./src/main.tsx","./src/features/map/mapcanvas.tsx"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/arcgis-map-components.d.ts","./src/css.d.ts","./src/custom-elements.d.ts","./src/main.tsx","./src/vite-env.d.ts","./src/features/map/mapcanvas.tsx"],"version":"5.9.3"}

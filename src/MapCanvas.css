@@ -24,144 +24,23 @@ body,
   padding: 0.5rem 0.9rem;
 }
 
-.udp-shell-panel {
-  --calcite-shell-panel-width: 360px;
-  z-index: 30;
-}
-
-.udp-action-bar {
-  border-right: 1px solid var(--calcite-color-border-2);
-}
-
-.udp-tool-panel {
-  height: 100%;
-}
-
-
-.map-stage {
-  position: relative;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  background: #f7f7f7;
-}
-
-.workspace__map {
-  display: block;
-  height: 100%;
-  width: 100%;
-}
-
-.app-header {
-  position: absolute;
-  top: 0.75rem;
-  left: 4.25rem;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  max-width: min(640px, calc(100vw - 9rem));
-  padding: 0.7rem 0.9rem;
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
-  backdrop-filter: blur(10px);
-}
-
-.app-header__eyebrow {
-  margin: 0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #4d4d4d;
-}
-
-.app-header__title {
-  margin: 0.1rem 0 0;
-  font-size: 1rem;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #151515;
-}
-
-.app-header__meta {
-  margin-left: auto;
-  white-space: nowrap;
-  font-size: 0.78rem;
-  color: #444;
-}
-
-.panel-section {
-  height: 100%;
-  padding: 0.75rem;
-  overflow: auto;
+.udp-table-panel {
+  --calcite-shell-panel-height: 50vh;
 }
 
 .panel-section--table {
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+  min-height: 0;
+  padding: 0.75rem;
 }
 
 .panel-section--table arcgis-feature-table {
-  display: block;
-  height: calc(100vh - 96px);
+  flex: 1;
+  min-height: 0;
   width: 100%;
-}
-
-.button-stack {
-  display: grid;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.panel-note {
-  margin: 0.75rem 0 0;
-  padding: 0.7rem;
-  border-radius: 0.6rem;
-  background: var(--calcite-color-background);
-  color: var(--calcite-color-text-2);
-  font-size: 0.82rem;
-  line-height: 1.4;
-}
-
-.map-status-pill,
-.map-mode-pill,
-.map-error-pill {
-  position: absolute;
-  z-index: 25;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-  font-size: 0.8rem;
-  backdrop-filter: blur(10px);
-}
-
-.map-status-pill {
-  right: 1rem;
-  bottom: 1rem;
-}
-
-.map-mode-pill {
-  left: 1rem;
-  bottom: 1rem;
-}
-
-.map-status-pill__label {
-  font-weight: 700;
-  color: #333;
-}
-
-.map-error-pill {
-  left: 50%;
-  bottom: 1rem;
-  max-width: min(720px, calc(100vw - 2rem));
-  transform: translateX(-50%);
-  border: 1px solid #b3261e;
-  color: #b3261e;
 }
 
 arcgis-layer-list,
@@ -176,27 +55,4 @@ arcgis-sketch {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-}
-arcgis-sketch {
-  min-height: 180px;
-}
-
-@media (max-width: 720px) {
-  .app-header {
-    left: 0.75rem;
-    right: 0.75rem;
-    max-width: none;
-  }
-
-  .app-header__title {
-    font-size: 0.9rem;
-  }
-
-  .app-header__meta {
-    display: none;
-  }
-
-  .map-mode-pill {
-    display: none;
-  }
 }

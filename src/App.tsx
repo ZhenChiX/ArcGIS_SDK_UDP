@@ -1,5 +1,5 @@
 import  MapCanvas from './features/map/MapCanvas';
-import './index.css';
+// import './index.css';
 
 function App() {
   return (
