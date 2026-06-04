@@ -1,1 +1,0 @@
-import{t as e}from"./request-DXLI1mXc.js";async function t(t,n){return(await e(t,{responseType:`image`,...n})).data}export{t};

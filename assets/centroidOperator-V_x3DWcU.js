@@ -1,1 +1,0 @@
-import"./apiConverter-04X3klvf.js";import{n as e,t}from"./centroidOperator-P-4f0KY4.js";export{e as execute,t as supportsCurves};

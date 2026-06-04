@@ -1,1 +1,0 @@
-import{t as e}from"./request-DXLI1mXc.js";import{i as t,n,r}from"./utils-BNKvqpo5.js";import{t as i}from"./EditCircuitsResult-BXiZYEj4.js";async function a(a,o,s){let c=n(a),l={...o.toJSON(),f:`json`},u=r(t({...c.query,...l}),{...s,method:`post`,authMode:`no-prompt`}),{data:d}=await e(`${c.path}/circuits/alter`,u);return i.fromJSON(d)}export{a as alterCircuit};

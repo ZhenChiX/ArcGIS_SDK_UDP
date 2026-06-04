@@ -1,1 +1,0 @@
-import"./Point2D-Baodp-kb.js";import"./Envelope2D-BshmhbAb.js";import{Et as e}from"./SpatialReference-8bmiyGT3.js";export{e as queryTransformationList};

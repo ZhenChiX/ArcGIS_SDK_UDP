@@ -1,1 +1,0 @@
-import{Ga as e}from"./index-BhEDqmK4.js";function t(t){t?.writtenProperties&&t.writtenProperties.forEach(({target:t,propName:n,newOrigin:r})=>{e(t)&&r&&t.originOf(n)!==r&&t.updateOrigin(n,r)})}export{t};

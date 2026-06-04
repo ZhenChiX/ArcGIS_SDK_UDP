@@ -1,1 +1,0 @@
-import"./vec4f64-BiwnP2yY.js";import"./glsl-D85RBwKC.js";import"./ShaderBuilder-B0mKT_kG.js";import"./VertexColor.glsl-DcQHhGia.js";import"./AlphaCutoff-BUJa90kF.js";import{n as e}from"./ShadedColorMaterial.glsl-COIsxbZi.js";export{e as build};
