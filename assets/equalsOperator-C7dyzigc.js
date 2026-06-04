@@ -1,0 +1,1 @@
+import"./apiConverter-04X3klvf.js";import{i as e,r as t,t as n}from"./equalsOperator-C_VlttaE.js";export{e as accelerateGeometry,n as execute,t as supportsCurves};
