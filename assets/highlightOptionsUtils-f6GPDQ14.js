@@ -1,1 +1,0 @@
-import"./index-CnHjNIOd.js";function e(e){return e?.name??`default`}export{e as t};

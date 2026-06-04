@@ -1,0 +1,1 @@
+import{t as e}from"./Portal-CW5C_H47.js";function t(t,n){return t===null?n:new e({url:t.field(`url`)})}export{t};
