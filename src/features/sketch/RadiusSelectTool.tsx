@@ -9,15 +9,11 @@
 //   isActive: boolean;
 // }
 
-// /**
-//  * Module-level config.
-//  * MapCanvas only controls ON/OFF.
-//  */
-// // target layers index to inspect (after flattening)
+// // CONFIGURATION
 // const TARGET_TEST_INDEX = 2;
 // const RADIUS_FEET = 250;
 // const AGGREGATE_FIELD = "LAND_USE_1";
-// const QUERY_THROTTLE_MS = 250;
+// let TARGET_LAYER_TITLE = "null";
 
 // type FieldCount = {
 //   value: string;
@@ -28,272 +24,249 @@
 //   mapRef,
 //   isActive,
 // }: CircleInspectorToolProps) {
-//   const [layerName, setLayerName] = useState("Target layer");
+//   // UI State 
 //   const [totalCount, setTotalCount] = useState(0);
 //   const [fieldCounts, setFieldCounts] = useState<FieldCount[]>([]);
-//   const [lastCursor, setLastCursor] = useState("");
-//   const [statusText, setStatusText] = useState("Move over map to inspect.");
+//   const [statusText, setStatusText] = useState("Standby");
 
+//   // Performance Refs
 //   const overlayLayerRef = useRef<GraphicsLayer | null>(null);
+//   const circleGraphicRef = useRef<Graphic | null>(null);
 //   const pointerHandleRef = useRef<any>(null);
-//   const queryRunRef = useRef(0);
-//   const lastQueryTimeRef = useRef(0);
+//   const highlightHandleRef = useRef<any>(null); // TRACKS THE GLOW
+//   const rafIdRef = useRef<number | null>(null);
+//   const isQueryingRef = useRef(false);
 
 //   const topCounts = useMemo(() => fieldCounts.slice(0, 8), [fieldCounts]);
 
+//   // --- HELPER: Flatten nested map layers ---
 //   function flattenLayers(mapInstance: any) {
 //     const layers: any[] = [];
-
 //     mapInstance.layers.forEach((layer: any) => {
 //       const children = layer.layers || layer.sublayers;
-
 //       if (children && children.length > 0) {
 //         children.forEach((child: any) => layers.push(child));
 //       } else {
 //         layers.push(layer);
 //       }
 //     });
-
 //     return layers;
 //   }
 
-//   function clearOutput() {
-//     overlayLayerRef.current?.removeAll();
-//     setTotalCount(0);
-//     setFieldCounts([]);
-//     setLastCursor("");
-//     setStatusText("Move over map to inspect.");
-//   }
+//   // --- HELPER: Fast Aggregation Logic ---
+//   function aggregateFeatures(features: any[]) {
+//     const countsMap = features.reduce((acc, feature) => {
+//       const raw = feature.attributes[AGGREGATE_FIELD];
+//       const val = raw === null || raw === undefined || raw === "" ? "N/A" : String(raw);
+//       acc[val] = (acc[val] || 0) + 1;
+//       return acc;
+//     }, {} as Record<string, number>);
 
-//   function buildCounts(features: any[]) {
-//     const counts = new Map<string, number>();
-
-//     features.forEach((feature) => {
-//       const rawValue = feature.attributes?.[AGGREGATE_FIELD];
-
-//       const value =
-//         rawValue === null || rawValue === undefined || rawValue === ""
-//           ? "Unknown"
-//           : String(rawValue);
-
-//       counts.set(value, (counts.get(value) ?? 0) + 1);
-//     });
-
-//     return Array.from(counts.entries())
-//       .map(([value, count]) => ({ value, count }))
+//     return Object.entries(countsMap)
+//       .map(([value, count]) => ({ value, count: Number(count) }))
 //       .sort((a, b) => b.count - a.count);
 //   }
 
 //   useEffect(() => {
 //     let cancelled = false;
 
-//     async function setupInspector() {
+//     async function initializeTool() {
 //       const mapElement = mapRef.current;
 //       if (!mapElement?.viewOnReady) return;
-
 //       await mapElement.viewOnReady();
 //       if (cancelled) return;
 
 //       const view = mapElement.view;
 //       const mapInstance = mapElement.map;
-
 //       if (!view || !mapInstance) return;
 
+//       // 1. SETUP GRAPHICS LAYER (Once)
 //       if (!overlayLayerRef.current) {
 //         overlayLayerRef.current = new GraphicsLayer({
-//           title: "Circle Inspector Overlay",
+//           title: "Inspector Overlay",
 //           listMode: "hide",
+//           elevationInfo: { mode: "on-the-ground" }
 //         });
-
 //         mapInstance.add(overlayLayerRef.current);
 //       }
 
+//       // 2. IDENTIFY TARGET LAYER
 //       const allLayers = flattenLayers(mapInstance);
 //       const targetLayer = allLayers[TARGET_TEST_INDEX];
+//       TARGET_LAYER_TITLE = allLayers[TARGET_TEST_INDEX]?.title || "Unknown Layer";
 
 //       if (!targetLayer) {
-//         setLayerName(`Layer index ${TARGET_TEST_INDEX} not found`);
-//         setStatusText("Target layer not found.");
+//         setStatusText("Layer Error");
 //         return;
 //       }
 
-//       setLayerName(targetLayer.title ?? `Layer ${TARGET_TEST_INDEX}`);
-
+//       // 3. WAIT FOR CLIENT-SIDE VIEW
 //       let layerView: any = null;
-
 //       try {
 //         layerView = await view.whenLayerView(targetLayer);
-//       } catch (error) {
-//         console.warn("[CircleInspectorTool] Could not create layerView:", error);
-//         setStatusText("Target layer is not queryable.");
+//       } catch (e) {
+//         console.warn("LayerView failed", e);
 //         return;
 //       }
 
-//       if (cancelled) return;
+//       // Cleanup logic helper
+//       const cleanup = () => {
+//         if (pointerHandleRef.current) pointerHandleRef.current.remove();
+//         if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+//         if (highlightHandleRef.current) highlightHandleRef.current.remove(); // Remove Glow
+//         if (overlayLayerRef.current) overlayLayerRef.current.removeAll();
+//         circleGraphicRef.current = null;
+//         view.popupEnabled = true;
+//       };
 
 //       if (!isActive) {
-//         view.popupEnabled = true;
-//         clearOutput();
-//         pointerHandleRef.current?.remove();
-//         pointerHandleRef.current = null;
+//         cleanup();
 //         return;
 //       }
 
+//       // 4. ACTIVATE TOOL
 //       view.popupEnabled = false;
-//       setStatusText("Inspector active. Move over the map.");
+//       setStatusText("Active");
 
-//       pointerHandleRef.current?.remove();
+//       // Initialize the reusable Graphic 
+//       circleGraphicRef.current = new Graphic({
+//         symbol: {
+//           type: "simple-fill",
+//           color: [0, 122, 255, 0.1],
+//           outline: { color: [0, 122, 255, 1], width: 1.5 },
+//         } as any
+//       });
+//       overlayLayerRef.current?.add(circleGraphicRef.current);
 
-//       pointerHandleRef.current = view.on("pointer-move", async (event: any) => {
-//         const now = Date.now();
+//       // 5. POINTER MOVE HANDLER (Frame-Locked)
+//       pointerHandleRef.current = view.on("pointer-move", (event: any) => {
+//         if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
 
-//         if (now - lastQueryTimeRef.current < QUERY_THROTTLE_MS) return;
-//         lastQueryTimeRef.current = now;
-
-//         const runId = ++queryRunRef.current;
-
-//         try {
-//           const mapPoint = view.toMap({ x: event.x, y: event.y });
-//           if (!mapPoint) return;
-
-//           const circle = new Circle({
-//             center: mapPoint,
-//             radius: RADIUS_FEET,
-//             radiusUnit: "feet",
-//             geodesic: true,
-//           });
-
-//           overlayLayerRef.current?.removeAll();
-
-//           overlayLayerRef.current?.add(
-//             new Graphic({
-//               geometry: circle,
-//               symbol: {
-//                 type: "simple-fill",
-//                 color: [0, 122, 255, 0.1],
-//                 outline: {
-//                   color: [0, 122, 255, 0.95],
-//                   width: 2,
-//                 },
-//               } as any,
-//             })
-//           );
-
-//           const query = targetLayer.createQuery();
-//           query.geometry = circle;
-//           query.spatialRelationship = "intersects";
-//           query.outFields = [AGGREGATE_FIELD];
-//           query.returnGeometry = false;
-
-//           /**
-//            * layerView.queryFeatures is faster for already-loaded client features.
-//            * If it fails, fallback to layer.queryFeatures.
-//            */
-//           let result;
+//         rafIdRef.current = requestAnimationFrame(async () => {
+//           if (isQueryingRef.current) return;
+//           isQueryingRef.current = true;
 
 //           try {
-//             result = await layerView.queryFeatures(query);
-//           } catch {
-//             result = await targetLayer.queryFeatures(query);
+//             // A. Update Visuals (Instant)
+//             const mapPoint = view.toMap({ x: event.x, y: event.y });
+//             if (!mapPoint) { isQueryingRef.current = false; return; }
+
+//             const circleGeom = new Circle({
+//               center: mapPoint,
+//               radius: RADIUS_FEET,
+//               radiusUnit: "feet",
+//               geodesic: true
+//             });
+
+//             if (circleGraphicRef.current) {
+//               circleGraphicRef.current.geometry = circleGeom;
+//             }
+
+//             // B. Run Query 
+//             const query = layerView.createQuery();
+//             query.geometry = circleGeom;
+//             query.spatialRelationship = "intersects";
+//             query.returnGeometry = false;
+
+//             // [CRITICAL FIX] We MUST request the OBJECTID field for highlighting to work
+//             const objectIdField = targetLayer.objectIdField || "OBJECTID";
+//             query.outFields = [AGGREGATE_FIELD, objectIdField];
+
+//             const results = await layerView.queryFeatures(query);
+
+//             // C. Process Data
+//             const features = results.features || [];
+//             const count = features.length;
+//             // --- E. APPLY THE NATIVE HIGHLIGHT ---
+//             // 1. Clear old highlight
+//             if (highlightHandleRef.current) {
+//               highlightHandleRef.current.remove();
+//               highlightHandleRef.current = null;
+//             }
+
+//             // 2. Add new highlight (This uses the same engine as clicking!)
+//             if (count > 0) {
+//               highlightHandleRef.current = layerView.highlight(features);
+//             }
+//             // -------------------------------------
+
+//             // D. Batch State Updates
+//             setTotalCount(count);
+//             if (count > 0) {
+//               const breakdown = aggregateFeatures(features);
+//               setFieldCounts(breakdown);
+
+//               // For debugging: Log the top breakdown
+//               console.log("Top Breakdown:", breakdown[0]);
+//             } else {
+//               setFieldCounts([]);
+//             }
+
+//           } catch (err) {
+//             // Silent fail
+//           } finally {
+//             isQueryingRef.current = false;
 //           }
-
-//           if (cancelled || runId !== queryRunRef.current) return;
-
-//           const features = result.features ?? [];
-//           const counts = buildCounts(features);
-
-//           setTotalCount(features.length);
-//           setFieldCounts(counts);
-//           setLastCursor(
-//             `${mapPoint.latitude?.toFixed?.(5) ?? "?"}, ${
-//               mapPoint.longitude?.toFixed?.(5) ?? "?"
-//             }`
-//           );
-//           setStatusText("Live query complete.");
-
-//           console.log(
-//             `[CircleInspectorTool] ${features.length} records in ${targetLayer.title}`
-//           );
-//           console.table(counts);
-//         } catch (error) {
-//           console.debug("[CircleInspectorTool] query skipped:", error);
-//         }
+//         });
 //       });
+
 //     }
 
-//     void setupInspector();
+//     void initializeTool();
 
 //     return () => {
 //       cancelled = true;
-
-//       pointerHandleRef.current?.remove();
-//       pointerHandleRef.current = null;
-
+//       // Full cleanup ensures no stuck highlights
+//       if (pointerHandleRef.current) pointerHandleRef.current.remove();
+//       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+//       if (highlightHandleRef.current) highlightHandleRef.current.remove();
+//       if (overlayLayerRef.current) overlayLayerRef.current.removeAll();
 //       const mapElement = mapRef.current;
-//       if (mapElement?.view) {
-//         mapElement.view.popupEnabled = true;
-//       }
-
-//       if (!isActive) {
-//         overlayLayerRef.current?.removeAll();
-//       }
+//       if (mapElement?.view) mapElement.view.popupEnabled = true;
 //     };
 //   }, [isActive, mapRef]);
 
 //   if (!isActive) return null;
 
 //   return (
-//     <div slot="top-left" className="circle-inspector-panel">
+//     <div slot="top-right" className="circle-inspector-panel">
 //       <div className="circle-panel-header">
 //         <div>
-//           <div className="circle-panel-title">Circle Inspector</div>
-//           <div className="circle-panel-subtitle">{RADIUS_FEET} ft live radius</div>
+//           <div className="circle-panel-title">Radius Inspector</div>
+//           <div className="circle-panel-subtitle">Search area · {statusText}</div>
 //         </div>
-
-//         <button className="circle-panel-clear" type="button" onClick={clearOutput}>
-//           Clear
-//         </button>
 //       </div>
 
-//       <div className="circle-status">{statusText}</div>
-
-//       <div className="circle-panel-section">
-//         <div className="circle-label">Target Layer</div>
-//         <div className="circle-value">{layerName}</div>
+//       <div className="circle-metric-hero">
+//         <span className="metric-val">{totalCount}</span>
+//         <span className="metric-lbl">features</span>
 //       </div>
 
 //       <div className="circle-panel-section">
-//         <div className="circle-label">Aggregate Field</div>
+//         <div className="circle-label">Layer</div>
+//         <div className="circle-value">{TARGET_LAYER_TITLE || "Unknown Layer"}</div>
+//       </div>
+
+//       <div className="circle-panel-section">
+//         <div className="circle-label">Grouped By</div>
 //         <div className="circle-value">{AGGREGATE_FIELD}</div>
 //       </div>
 
-//       <div className="circle-stat-row">
-//         <div>
-//           <div className="circle-label">Features Found</div>
-//           <div className="circle-big-number">{totalCount}</div>
-//         </div>
-
-//         <div>
-//           <div className="circle-label">Cursor</div>
-//           <div className="circle-small-text">{lastCursor || "Move over map"}</div>
-//         </div>
-//       </div>
-
 //       <div className="circle-panel-section">
-//         <div className="circle-label">Land Use Count</div>
+//         <div className="circle-label">Breakdown</div>
 
-//         {topCounts.length === 0 ? (
-//           <div className="circle-empty">No features detected inside the radius.</div>
-//         ) : (
-//           <div className="circle-count-list">
-//             {topCounts.map((item) => (
-//               <div key={item.value} className="circle-count-item">
-//                 <span title={item.value}>{item.value}</span>
-//                 <strong>{item.count}</strong>
+//         <div className="circle-list">
+//           {topCounts.length === 0 ? (
+//             <div className="row-empty">No data in range</div>
+//           ) : (
+//             topCounts.map((item) => (
+//               <div key={item.value} className="circle-list-row">
+//                 <span className="row-key">{item.value}</span>
+//                 <span className="row-val">{item.count}</span>
 //               </div>
-//             ))}
-//           </div>
-//         )}
+//             ))
+//           )}
+//         </div>
 //       </div>
 //     </div>
 //   );
