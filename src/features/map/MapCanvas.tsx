@@ -8,6 +8,8 @@ import "@arcgis/map-components/components/arcgis-layer-list";
 import "@arcgis/map-components/components/arcgis-legend";
 import "@arcgis/map-components/components/arcgis-expand";
 import "@arcgis/map-components/components/arcgis-feature-table";
+// import arcgis-scale-bar
+import "@arcgis/map-components/components/arcgis-scale-bar";
 
 import "@esri/calcite-components/components/calcite-shell";
 import "@esri/calcite-components/components/calcite-shell-panel";
@@ -34,6 +36,8 @@ export default function MapCanvas() {
   const [panelCollapsed, setPanelCollapsed] = useState(true);
   const [tableVisible, setTableVisible] = useState(false);
   const [circleInspectorActive, setCircleInspectorActive] = useState(false);
+  // Highlight state for Circle Inspector
+  const [circleSelectedIds, setCircleSelectedIds] = useState<number[]>([]);
 
   function handleLayersAction() {
     setPanelCollapsed((currentCollapsed) => !currentCollapsed);
@@ -214,6 +218,8 @@ export default function MapCanvas() {
         popupComponentEnabled
         dockingEnabled
       >
+
+
         <arcgis-expand slot="top-left" mode="auto">
           <arcgis-legend label="Legend" icon="legend"></arcgis-legend>
         </arcgis-expand>
@@ -224,15 +230,17 @@ export default function MapCanvas() {
           {/* <CircleInspectorTool mapRef={mapRef}/> */}
 
           {/* // Target test index based on flattened layer. */}
-        
+
         </div>
-          <CircleInspectorTool
-            mapRef={mapRef}
-            isActive={circleInspectorActive}
-          />
+        <CircleInspectorTool
+          mapRef={mapRef}
+          isActive={circleInspectorActive}
+    
+        />
         {/* <CircleInspectorTool mapRef={mapRef} targetTestIndex={4} /> */}
 
-
+        {/* Scale Bar */}
+        <arcgis-scale-bar slot="bottom-start" bar-style="line" unit="imperial"></arcgis-scale-bar>
 
         {/* <arcgis-search slot="top-right" /> */}
 

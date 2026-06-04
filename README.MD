@@ -138,7 +138,7 @@ public/
 docs/
 ```
 
-##Milestones
+## Milestones
 
 ### Milestone 1
 - app scaffold works
