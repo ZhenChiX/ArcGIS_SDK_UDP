@@ -8,6 +8,8 @@ import "@arcgis/map-components/components/arcgis-layer-list";
 import "@arcgis/map-components/components/arcgis-legend";
 import "@arcgis/map-components/components/arcgis-expand";
 import "@arcgis/map-components/components/arcgis-feature-table";
+// import arcgis-scale-bar
+import "@arcgis/map-components/components/arcgis-scale-bar";
 
 import "@esri/calcite-components/components/calcite-shell";
 import "@esri/calcite-components/components/calcite-shell-panel";
@@ -16,12 +18,16 @@ import "@esri/calcite-components/components/calcite-action-bar";
 import "@esri/calcite-components/components/calcite-action";
 import "@esri/calcite-components/components/calcite-tooltip";
 
+import "@esri/calcite-components/components/calcite-button";
+import "@esri/calcite-components/components/calcite-popover";
+import "@esri/calcite-components/components/calcite-card";
+import "@esri/calcite-components/components/calcite-dialog";
+
 import "../../MapCanvas.css";
 // import RadiusSelectTool from "../sketch/RadiusSelectTool";
 
 // import CircleInspectorTool from "../sketch/RadiusSelectTool";
 import CircleInspectorTool from "../sketch/CircleInspectorTool";
-
 
 const WEBMAP_ID = "ac2e660700144e0883b725c75d8b8b5f";
 const MAP_ID = "udp-map";
@@ -34,6 +40,9 @@ export default function MapCanvas() {
   const [panelCollapsed, setPanelCollapsed] = useState(true);
   const [tableVisible, setTableVisible] = useState(false);
   const [circleInspectorActive, setCircleInspectorActive] = useState(false);
+
+  // Highlight state for Circle Inspector
+  // const [circleSelectedIds, setCircleSelectedIds] = useState<number[]>([]);
 
   function handleLayersAction() {
     setPanelCollapsed((currentCollapsed) => !currentCollapsed);
@@ -86,7 +95,13 @@ export default function MapCanvas() {
       const mapInstance = mapElement.map;
       if (mapInstance && mapInstance.layers) {
         mapInstance.layers.forEach((layer: any, index: number) => {
-          const allowedIndexes = [2]; // Keep your preferred sidebar indices active
+          const allowedIndexes = [0, 1]; // Keep your preferred sidebar indices active
+          // Index 0: "Commercial & Land Use"
+          // Index 1: "Micromobility"
+          // Index 2: "U District Boundary"
+          // Index 3: "Zone Mask"
+          // Index 4: "Inspector Overlay"
+          console.log(`Layer Index ${index}: "${layer.title}"`);
 
           if (!allowedIndexes.includes(index)) {
             layer.listMode = "hide";
@@ -95,6 +110,17 @@ export default function MapCanvas() {
 
         // =================================================================
         // FINAL FIXED CODE BLOCK: LOAD DYNAMIC SUB-LAYERS BY INDEX
+        // 0 = Property & Parcel boundaries       polygon / parcel inspector
+        // 1 = Active Business License_UD         business activity points
+        // 2 = Food_Facilites_UD                  food facility points
+        // 3 = Lime Bike Feed_Heatmap             heatmap version
+        // 4 = Lime Bike Feed_Point               point version
+        // 5 = ON Street Bike Racks UD            bike rack points
+        // 6 = OFF Street Bike Racks              bike rack points
+        // 7 = Collisions All Years UD 23-26      safety/collision points or lines
+        // 8 = U District Boundary                boundary
+        // 9 = Zone Mask                          mask
+        // 10 = Inspector Overlay                 graphics layer
         // =================================================================
         if (tableElement) {
           // Flatten the map's layout arrays to automatically extract all hidden nested child layers
@@ -121,7 +147,7 @@ export default function MapCanvas() {
           // -----------------------------------------------------------
           // TESTING AREA: Change this index number to test out different sheets!
           // -----------------------------------------------------------
-          const targetTestIndex = 2;
+          const targetTestIndex = 0;
 
           const selectedTargetSheet = allFlattenedLayers[targetTestIndex];
 
@@ -149,8 +175,10 @@ export default function MapCanvas() {
   return (
     <calcite-shell className="udp-shell">
       <calcite-shell-header slot="header">
-        <h3>U DISTRICT PARTNERSHIP</h3>
+        <h3 style={{ margin: "0 1rem" }}>U DISTRICT PARTNERSHIP</h3>
       </calcite-shell-header>
+
+
 
       <calcite-shell-panel slot="panel-end" width-scale="auto" collapsed={panelCollapsed ? true : undefined}>
         <calcite-action-bar slot="action-bar">
@@ -183,7 +211,7 @@ export default function MapCanvas() {
           <calcite-action
             id="circle-inspector-button"
             icon="chart-magnifying-glass"
-            label="Circle Inspector"
+            label="Inspector Circle"
             text="Inspector"
             active={circleInspectorActive ? true : undefined}
             onClick={() => setCircleInspectorActive((value) => !value)}
@@ -214,6 +242,8 @@ export default function MapCanvas() {
         popupComponentEnabled
         dockingEnabled
       >
+
+
         <arcgis-expand slot="top-left" mode="auto">
           <arcgis-legend label="Legend" icon="legend"></arcgis-legend>
         </arcgis-expand>
@@ -224,15 +254,17 @@ export default function MapCanvas() {
           {/* <CircleInspectorTool mapRef={mapRef}/> */}
 
           {/* // Target test index based on flattened layer. */}
-        
+
         </div>
-          <CircleInspectorTool
-            mapRef={mapRef}
-            isActive={circleInspectorActive}
-          />
+        {/* Inspector Component */}
+        <CircleInspectorTool
+          mapRef={mapRef}
+          isActive={circleInspectorActive}
+        />
         {/* <CircleInspectorTool mapRef={mapRef} targetTestIndex={4} /> */}
 
-
+        {/* Scale Bar */}
+        <arcgis-scale-bar slot="bottom-start" bar-style="line" unit="imperial"></arcgis-scale-bar>
 
         {/* <arcgis-search slot="top-right" /> */}
 

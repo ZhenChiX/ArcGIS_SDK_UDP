@@ -1,70 +1,91 @@
 .circle-inspector-panel {
-  width: 220px;
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  padding: 12px;
-  font-family: "Avenir Next", sans-serif;
-  margin: 15px;
-  pointer-events: none; /* Allows clicks to pass through to map if needed */
+  width: min(22rem, 32vw);
+  max-height: 70vh;
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 0.4rem;
+  box-shadow: 0 0.08rem 0.35rem rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  font-family: "Avenir Next", system-ui, sans-serif;
+  margin: 0.9rem;
+  pointer-events: none;
 }
 
 .circle-panel-header {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
+  border-bottom: 0.0625rem solid #eee;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .circle-panel-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 0.9rem;
   color: #151515;
 }
 
 .circle-panel-subtitle {
-  font-size: 11px;
+  font-size: 0.72rem;
   color: #6a6a6a;
+}
+
+.circle-status {
+  margin-bottom: 0.6rem;
+  font-size: 0.72rem;
+  color: #666;
 }
 
 .circle-metric-hero {
   display: flex;
   align-items: baseline;
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
 }
 
 .metric-val {
-  font-size: 28px;
+  font-size: 1.8rem;
   font-weight: 700;
   color: #0079c1;
-  margin-right: 6px;
+  margin-right: 0.4rem;
 }
 
 .metric-lbl {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #666;
   text-transform: uppercase;
 }
 
+.circle-panel-section {
+  padding-top: 0.55rem;
+  margin-top: 0.55rem;
+  border-top: 0.0625rem solid #eee;
+}
+
 .circle-label {
-  font-size: 10px;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   color: #999;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
+}
+
+.circle-value {
+  font-size: 0.8rem;
+  color: #333;
+  word-break: break-word;
 }
 
 .circle-list-row {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
-  margin-bottom: 3px;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  margin-bottom: 0.2rem;
 }
 
 .row-key {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
+  max-width: 11rem;
   color: #333;
 }
 
@@ -74,7 +95,7 @@
 }
 
 .row-empty {
-  font-size: 11px;
-  color: #ccc;
+  font-size: 0.72rem;
+  color: #999;
   font-style: italic;
 }
