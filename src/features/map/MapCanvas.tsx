@@ -35,9 +35,11 @@ const MAP_ID = "udp-map";
 export default function MapCanvas() {
   const mapRef = useRef<any>(null);
   const featureTableRef = useRef<any>(null);
+  //Force expand group layer onload
+
 
   // State management
-  const [panelCollapsed, setPanelCollapsed] = useState(true);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [tableVisible, setTableVisible] = useState(false);
   const [circleInspectorActive, setCircleInspectorActive] = useState(false);
 
@@ -172,6 +174,7 @@ export default function MapCanvas() {
       cancelled = true;
     };
   }, [tableVisible]);
+
   return (
     <calcite-shell className="udp-shell">
       <calcite-shell-header slot="header">
@@ -224,8 +227,10 @@ export default function MapCanvas() {
           {/* Future buttons goes here */}
         </calcite-action-bar>
 
+        {/* Layer List Panel */}
         <calcite-panel heading="Layers">
-          <arcgis-layer-list reference-element={MAP_ID}
+          <arcgis-layer-list
+            reference-element={MAP_ID}
             tooltip="Layers"
             selection-mode="single" />
         </calcite-panel>
@@ -244,7 +249,7 @@ export default function MapCanvas() {
       >
 
 
-        <arcgis-expand slot="top-left" mode="auto">
+        <arcgis-expand slot="top-left" mode="auto" expanded>
           <arcgis-legend label="Legend" icon="legend"></arcgis-legend>
         </arcgis-expand>
 
