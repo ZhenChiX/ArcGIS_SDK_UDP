@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import "@arcgis/map-components/main.css";
 import "@arcgis/map-components/components/arcgis-map";
@@ -29,6 +29,9 @@ import "../../MapCanvas.css";
 // import CircleInspectorTool from "../sketch/RadiusSelectTool";
 import CircleInspectorTool from "../sketch/CircleInspectorTool";
 
+import PlanningTools from "./PlanningTools";
+import type MapView from "@arcgis/core/views/MapView";
+
 const WEBMAP_ID = "ac2e660700144e0883b725c75d8b8b5f";
 const MAP_ID = "udp-map";
 
@@ -41,10 +44,33 @@ export default function MapCanvas() {
   const [tableVisible, setTableVisible] = useState(false);
   const [circleInspectorActive, setCircleInspectorActive] = useState(false);
 
+  const [planningOpen, setPlanningOpen] = useState(false);
+  const [view, setView] = useState<MapView | null>(null);
+  const [mapStatus, setMapStatus] = useState("Loading district map…");
+  const drawingChanged = useCallback((drawing: boolean) => {
+    if (drawing) setCircleInspectorActive(false);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () =>
+        setMapStatus(
+          "Map is taking longer to load. Check your connection and access to ArcGIS services, then reload.",
+        ),
+      20000,
+    );
+    if (view) {
+      window.clearTimeout(timer);
+      setMapStatus("");
+    }
+    return () => window.clearTimeout(timer);
+  }, [view]);
+
   // Highlight state for Circle Inspector
   // const [circleSelectedIds, setCircleSelectedIds] = useState<number[]>([]);
 
   function handleLayersAction() {
+    setPlanningOpen(false);
     setPanelCollapsed((currentCollapsed) => !currentCollapsed);
   }
 
@@ -65,6 +91,7 @@ export default function MapCanvas() {
       if (!mapElement?.viewOnReady) return;
       await mapElement.viewOnReady();
       if (cancelled) return;
+      setView(mapElement.view);
 
       // Connect table reference anchor
       if (tableElement) {
@@ -103,7 +130,7 @@ export default function MapCanvas() {
           // Index 4: "Inspector Overlay"
           console.log(`Layer Index ${index}: "${layer.title}"`);
 
-          if (!allowedIndexes.includes(index)) {
+          if (!allowedIndexes.includes(index) && layer.title !== "Planning annotations") {
             layer.listMode = "hide";
           }
         });
@@ -141,7 +168,9 @@ export default function MapCanvas() {
           // Console log map index layout registry to make debugging easy
           console.log("--- Flat Sublayer Registry Map ---");
           allFlattenedLayers.forEach((layer, idx) => {
-            console.log(`[Index ${idx}] -> Name: "${layer.title}" | Type: ${layer.type || "sublayer"}`);
+            console.log(
+              `[Index ${idx}] -> Name: "${layer.title}" | Type: ${layer.type || "sublayer"}`,
+            );
           });
 
           // -----------------------------------------------------------
@@ -153,20 +182,31 @@ export default function MapCanvas() {
 
           if (selectedTargetSheet) {
             tableElement.layer = selectedTargetSheet;
-            console.log(`[Success] Table loaded index [${targetTestIndex}]: "${selectedTargetSheet.title}"`);
+            console.log(
+              `[Success] Table loaded index [${targetTestIndex}]: "${selectedTargetSheet.title}"`,
+            );
           } else {
             // Absolute fail-safe fallback to load whatever works if the testing index is out of bounds
-            const functionalFallback = allFlattenedLayers.find(l => l.type === "feature" || l.layerId !== undefined);
+            const functionalFallback = allFlattenedLayers.find(
+              (l) => l.type === "feature" || l.layerId !== undefined,
+            );
             if (functionalFallback) {
               tableElement.layer = functionalFallback;
-              console.log(`[Fallback Alert] Loading working layer: "${functionalFallback.title}"`);
+              console.log(
+                `[Fallback Alert] Loading working layer: "${functionalFallback.title}"`,
+              );
             }
           }
         }
       }
     }
 
-    void initializeAndSetupUI();
+    void initializeAndSetupUI().catch(() => {
+      if (!cancelled)
+        setMapStatus(
+          "Unable to load the district map. Check access to ArcGIS services and reload.",
+        );
+    });
 
     return () => {
       cancelled = true;
@@ -174,13 +214,24 @@ export default function MapCanvas() {
   }, [tableVisible]);
   return (
     <calcite-shell className="udp-shell">
-      <calcite-shell-header slot="header">
-        <h3 style={{ margin: "0 1rem" }}>U DISTRICT PARTNERSHIP</h3>
-      </calcite-shell-header>
+      <header slot="header" className="udp-header">
+        <div>
+          <span className="planning-eyebrow">U DISTRICT PARTNERSHIP</span>
+          <h1>District planning map</h1>
+        </div>
+        <span className="udp-header-note">Explore · Plan · Share</span>
+      </header>
+      {mapStatus && !planningOpen && (
+        <div className="map-status" role="status">
+          {mapStatus}
+        </div>
+      )}
 
-
-
-      <calcite-shell-panel slot="panel-end" width-scale="auto" collapsed={panelCollapsed ? true : undefined}>
+      <calcite-shell-panel
+        slot="panel-end"
+        width-scale="m"
+        collapsed={panelCollapsed ? true : undefined}
+      >
         <calcite-action-bar slot="action-bar">
           {/* Layer List Toggle Button */}
           <calcite-action
@@ -214,20 +265,49 @@ export default function MapCanvas() {
             label="Inspector Circle"
             text="Inspector"
             active={circleInspectorActive ? true : undefined}
-            onClick={() => setCircleInspectorActive((value) => !value)}
+            onClick={() => {
+              setPlanningOpen(false);
+              setCircleInspectorActive((value) => !value);
+            }}
           />
 
-          <calcite-tooltip reference-element="circle-inspector-button" placement="auto">
+          <calcite-tooltip
+            reference-element="circle-inspector-button"
+            placement="auto"
+          >
             <span>Inspector Circle</span>
           </calcite-tooltip>
 
-          {/* Future buttons goes here */}
+          <calcite-action
+            id="planning-button"
+            icon="pencil-mark"
+            text="Planning tools"
+            label="Planning tools"
+            active={planningOpen ? true : undefined}
+            onClick={() => {
+              setPlanningOpen((value) => !value);
+              setPanelCollapsed(false);
+              setCircleInspectorActive(false);
+            }}
+          />
+          <calcite-tooltip reference-element="planning-button">
+            Basemaps, annotations & export
+          </calcite-tooltip>
         </calcite-action-bar>
 
-        <calcite-panel heading="Layers">
-          <arcgis-layer-list reference-element={MAP_ID}
-            tooltip="Layers"
-            selection-mode="single" />
+        <calcite-panel heading={planningOpen ? "Planning tools" : "Layers"}>
+          <PlanningTools
+            view={view}
+            active={planningOpen}
+            onDrawingChange={drawingChanged}
+          />
+          <div hidden={planningOpen}>
+            <arcgis-layer-list
+              reference-element={MAP_ID}
+              tooltip="Layers"
+              selection-mode="single"
+            />
+          </div>
         </calcite-panel>
       </calcite-shell-panel>
 
@@ -242,8 +322,6 @@ export default function MapCanvas() {
         popupComponentEnabled
         dockingEnabled
       >
-
-
         <arcgis-expand slot="top-left" mode="auto">
           <arcgis-legend label="Legend" icon="legend"></arcgis-legend>
         </arcgis-expand>
@@ -254,17 +332,17 @@ export default function MapCanvas() {
           {/* <CircleInspectorTool mapRef={mapRef}/> */}
 
           {/* // Target test index based on flattened layer. */}
-
         </div>
         {/* Inspector Component */}
-        <CircleInspectorTool
-          mapRef={mapRef}
-          isActive={circleInspectorActive}
-        />
+        <CircleInspectorTool mapRef={mapRef} isActive={circleInspectorActive} />
         {/* <CircleInspectorTool mapRef={mapRef} targetTestIndex={4} /> */}
 
         {/* Scale Bar */}
-        <arcgis-scale-bar slot="bottom-start" bar-style="line" unit="imperial"></arcgis-scale-bar>
+        <arcgis-scale-bar
+          slot="bottom-start"
+          bar-style="line"
+          unit="imperial"
+        ></arcgis-scale-bar>
 
         {/* <arcgis-search slot="top-right" /> */}
 
@@ -274,8 +352,7 @@ export default function MapCanvas() {
           ensures that it stays nested within the map layout engine boundaries.
         */}
         {tableVisible && (
-
-          <div slot="bottom-start" className="inner-map-table-panel" >
+          <div slot="bottom-start" className="inner-map-table-panel">
             <arcgis-feature-table
               ref={featureTableRef}
               id="udp-feature-table"
@@ -285,7 +362,6 @@ export default function MapCanvas() {
               show-selection-column="true"
             ></arcgis-feature-table>
           </div>
-
         )}
       </arcgis-map>
     </calcite-shell>

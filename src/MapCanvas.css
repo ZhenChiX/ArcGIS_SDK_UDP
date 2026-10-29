@@ -26,7 +26,9 @@ body,
 
 /* Responsive inner container bounded directly inside the map slot */
 .inner-map-table-panel {
-  width: calc(100vw - 4.5rem); /* Dynamically scales with the action bar shell panel width */
+  width: calc(
+    100vw - 4.5rem
+  ); /* Dynamically scales with the action bar shell panel width */
   height: 38vh;
   background-color: var(--calcite-color-foreground-1);
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
@@ -44,4 +46,247 @@ body,
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+
+/* Phase 1 planning workspace; retains the Calcite shell and action rail. */
+.udp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #143b46;
+  color: white;
+  border-bottom: 3px solid #6ac7b3;
+}
+.udp-header h1 {
+  margin: 0.25rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.planning-eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+}
+.udp-header-note {
+  color: #b6d8d6;
+  font-size: 0.8rem;
+}
+.map-status {
+  position: absolute;
+  z-index: 10;
+  top: 100px;
+  left: 60px;
+  max-width: min(460px, 70vw);
+  padding: 0.75rem 1rem;
+  background: #fff9e8;
+  color: #59480b;
+  border: 1px solid #e5d596;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+.planning-tools {
+  color: var(--calcite-color-text-1, #243e49);
+  background: var(--calcite-color-foreground-1, white);
+  width: 100%;
+  min-width: 260px;
+}
+.planning-tools[hidden] {
+  display: none;
+}
+.planning-intro {
+  padding: 1.4rem 1rem 1rem;
+  background: #eef6f4;
+}
+.planning-intro h2 {
+  font-size: 1.25rem;
+  margin: 0.5rem 0;
+}
+.planning-tools p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.planning-intro p {
+  margin-bottom: 0;
+}
+.planning-tabs {
+  display: flex;
+  border-bottom: 1px solid #d9e4e5;
+}
+.planning-tools button {
+  cursor: pointer;
+  font: inherit;
+  min-height: 44px;
+  border: 1px solid #b7cacc;
+  border-radius: 4px;
+  background: white;
+  color: #174957;
+  padding: 0.6rem 0.8rem;
+}
+.planning-tools button:hover:not(:disabled) {
+  background: #edf7f5;
+  border-color: #287c79;
+}
+.planning-tools button:focus-visible,
+.planning-tools input:focus-visible {
+  outline: 3px solid #007ac2;
+  outline-offset: 2px;
+}
+.planning-tools button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.planning-tabs button {
+  flex: 1;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  font-size: 0.85rem;
+}
+.planning-tabs button[aria-selected="true"] {
+  border-bottom-color: #168575;
+  color: #126354;
+  font-weight: 700;
+}
+.planning-section {
+  padding: 1rem;
+}
+.planning-section h3 {
+  font-size: 1rem;
+  margin: 0.25rem 0;
+}
+.basemap-options {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.basemap-options button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+}
+.basemap-options button[aria-pressed="true"] {
+  border: 2px solid #168575;
+  background: #f1faf7;
+}
+.basemap-options strong,
+.basemap-options small {
+  display: block;
+}
+.basemap-options small {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: #527078;
+}
+.basemap-swatch {
+  width: 40px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: repeating-linear-gradient(35deg, #d9e9e5 0 9px, white 9px 11px);
+}
+.basemap-swatch.satellite {
+  background: repeating-linear-gradient(
+    125deg,
+    #3e6550 0 10px,
+    #71826a 10px 14px
+  );
+}
+.basemap-swatch.topo-vector {
+  background: repeating-radial-gradient(
+    ellipse at top left,
+    #e5ead7 0 6px,
+    #aebf9e 7px 8px
+  );
+}
+.planning-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 1rem 0;
+}
+.planning-label input {
+  font: inherit;
+  border: 1px solid #b7cacc;
+  border-radius: 4px;
+  padding: 0.6rem;
+  min-width: 0;
+}
+.planning-label input[type="color"] {
+  height: 44px;
+  width: 100%;
+  padding: 0.25rem;
+}
+.drawing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.drawing-actions button {
+  flex: 1 0 28%;
+  font-size: 0.8rem;
+}
+.planning-drawing-count {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  border-top: 1px solid #d9e4e5;
+  padding-top: 0.75rem;
+}
+.planning-notice {
+  padding: 0.75rem;
+  margin: 0.75rem;
+  background: #fff9e8;
+  border-radius: 4px;
+}
+.planning-notice button {
+  margin: 0.2rem;
+}
+.planning-tools .planning-footnote {
+  font-size: 0.75rem;
+  color: #587078;
+}
+.planning-tools .planning-primary {
+  width: 100%;
+  background: #146c61;
+  color: white;
+  border-color: #146c61;
+}
+.planning-tools .planning-primary:hover:not(:disabled) {
+  background: #10564e;
+  color: white;
+}
+.planning-status {
+  padding: 0 1rem;
+}
+@media (max-width: 640px) {
+  .udp-header {
+    padding: 0.75rem;
+  }
+  .udp-header-note {
+    display: none;
+  }
+  .udp-header h1 {
+    font-size: 1rem;
+  }
+  .udp-shell calcite-shell-panel {
+    --calcite-shell-panel-width: min(300px, calc(100vw - 58px));
+  }
+}
+.udp-shell calcite-shell-panel {
+  --calcite-shell-panel-width: 320px;
+  --calcite-shell-panel-max-width: calc(100vw - 58px);
+  --calcite-shell-panel-min-width: 0px;
+}
+.planning-tools {
+  width: 320px;
+  max-width: calc(100vw - 58px);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
